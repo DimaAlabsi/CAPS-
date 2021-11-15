@@ -1,6 +1,15 @@
 "use strict";
-const events=require('../events');
+// const events=require('../events');
 // const faker= require('faker');
+require('dotenv').config();
+const PORT= process.env.PORT || 8080;
+const io =require('socket.io-client');
+
+//connect
+const host=`http://localhost:${PORT}` || 'http://localhost:8080';
+const capsConnection = io.connect(`${host}/caps`)
+const faker = require('faker');
+const nameOfStore = process.env.STORE_NAME;
 
 
 
@@ -9,18 +18,18 @@ const pickup=(payload)=>{
 
     setTimeout(()=>{
         console.log(`DRIVER: picked up ${payload.orderID}`);
-        events.emit('in-transit', payload)
+        capsConnection.emit('in-transit', payload)
     }, 1000)
 
 
 
 setTimeout(() => {
     console.log(`DRIVER: delivered ${payload.orderID}`);
-    events.emit('delivered', payload);
-  }, 3000)
+    capsConnection.emit('delivered', payload);
+  }, 1500)
 
 
 }
-events.on('pickup',pickup)
+capsConnection.on('pickup',pickup)
 
-  module.exports={pickup}
+  // module.exports={pickup}
