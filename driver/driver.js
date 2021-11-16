@@ -11,25 +11,25 @@ const capsConnection = io.connect(`${host}/caps`)
 const faker = require('faker');
 const nameOfStore = process.env.STORE_NAME;
 
-
-
-
+capsConnection.emit('get_all');
 const pickup=(payload)=>{
 
     setTimeout(()=>{
-        console.log(`DRIVER: picked up ${payload.orderID}`);
-        capsConnection.emit('in-transit', payload)
+        console.log(`DRIVER: picked up ${payload.id}`);
+        capsConnection.emit('in-transit', JSON.stringify(payload))
     }, 1000)
 
 
 
 setTimeout(() => {
-    console.log(`DRIVER: delivered ${payload.orderID}`);
-    capsConnection.emit('delivered', payload);
+    console.log(`DRIVER: delivered ${payload.id}`);
+    capsConnection.emit('delivered', JSON.stringify(payload));
   }, 1500)
 
 
+  capsConnection.emit('received');
 }
 capsConnection.on('pickup',pickup)
+
 
   // module.exports={pickup}
