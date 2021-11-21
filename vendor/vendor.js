@@ -1,41 +1,45 @@
-"use strict";
+'use strict';
 require('dotenv').config();
+const client = require('socket.io-client');
 const PORT = process.env.PORT || 8080;
-const io = require('socket.io-client');
 
-//connect
-const host = `http://localhost:${PORT}`;
-const capsConnection = io.connect(`${host}/caps`)
-const faker = require('faker');
+const host = `http://localhost:${PORT}/caps`;
+const ioClient = client.connect(host);
+const faker = require("faker");
 const nameOfStore = process.env.STORE_NAME;
-
-// const events = require('../events');
-// require('dotenv').config();
+// // const events = require('../events');
 
 
 
-const Thanking = (payload) => {
-    console.log(`Vendor: Thank you for delivering ${payload.id}`);
 
-}
+// // const Thanking = (payload) => {
+// //     console.log(`Vendor: Thank you for delivering : ${JSON.stringify(payload.payload)} `)
+
+// // }
 
 setInterval(() => {
-    let order = {
-        store: nameOfStore,
-        orderID: faker.datatype.uuid(),
-        customer: faker.name.findName(),
-        address: faker.address.streetAddress()
-    }
-    capsConnection.emit('pickup', JSON.stringify(order))
-}, 3000);
+  const payload = {
+    customer: faker.name.findName(),
+    orderID: faker.datatype.uuid(),
+    store: nameOfStore,
+    address: faker.address.streetAddress()
 
-capsConnection.on('addedOrderAtHub', payload => {
+  }
 
-    console.log(`VENDOR: Order in Queue 🧐🧐🧐🧐🧐🧐 :`, payload);
-    // {"orderID":"0d855fcc-d71a-48cd-846b-caf0d5b22be0","customer":"Walter Gerlach","address":"385 Bayer Manors"}
+  ioClient.emit('order', payload);
+  ioClient.emit('pickUp', payload);
+}, 5000);
+ioClient.on('added', payload => {
+  console.log('Thanks for adding the order at the server queue 💬💬💬💬💬 ', payload.orderID)
+})
+ioClient.on('deliveredVendor', delivered)
+function delivered(payload) {
 
-});
+  console.log('Vendor: Thank you for delivering 🚴🚴🚴🚴🚴 ', payload)
+}
 
-capsConnection.on('delivered', Thanking);
 
 // module.exports = { Thanking };
+
+
+

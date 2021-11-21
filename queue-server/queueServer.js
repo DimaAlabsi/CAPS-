@@ -1,69 +1,84 @@
-"use strict";
+
+
+
+'use strict'
+
 const PORT = process.env.PORT || 8080;
 const io = require('socket.io')(PORT);
 const uuid = require('uuid').v4;
 
-// our Queue is an object
-// table >> DB
-// keyed Q
+// // our Queue is an object
+// // table >> DB
+// // keyed Q
 const msgQueue = {
     messages: {}
 }
 
-// namespace
-const allCaps = io.of('/caps');
+const caps = io.of('/caps')
 
-allCaps.on('connection', socket => {
-    console.log("CONNECTED to queue-server", socket.id);
+caps.on('connection', socket => {
 
-    socket.on('pickup', payload => {
-        console.log('picked up a new order  ....');
+    console.log("CONNECTED ☑️☑️☑️", socket.id)
 
+    socket.on("pickUp", pickup);
+    function pickup(payload) {
+
+
+        console.log("adding new order", payload.orderID)
         const id = uuid();
-        msgQueue.messages[id] = { 
-                   event: 'pickup',
-                    time: new Date(),
-        
-                    payload: payload};
-        console.log('after adding message Msg Q ✔️✔️✔️✔️✔️✔️>>', msgQueue);
+        console.log("id :", id)
+        msgQueue.messages[id] = payload
 
-        socket.emit('addedOrderAtHub', payload);
+        socket.emit('added', payload);
 
-        allCaps.emit('pickup', { id: id, payload: msgQueue.messages[id] })
-    });
-    socket.on('in-transit', payload => {
-        const id = uuid();
-        msgQueue.messages[id] = { 
-            event: 'in-transit',
-             time: new Date(),
- 
-             payload: payload }
+        caps.emit('order', { id: id, payload: msgQueue.messages.id });
 
-        allCaps.emit('in-transit', { id, payload: msgQueue.messages[id] });
-    });
+        console.log("message added 🗨️ ", msgQueue.messages)
+        let order = {
+            event: "pickup",
+            time: new Date(),
+            payload: payload,
+        };
+        console.log("Event", order);
 
-    socket.on('delivered', (payload) => {
-        const id = uuid();
-        msgQueue.messages[id] = { 
-            event: 'delivered',
-             time: new Date(),
- 
-             payload: payload};
-        allCaps.emit('delivered', { id, payload: msgQueue.messages[id] });
-    });
-    socket.on('received', id => {
-        console.log('received from the store and remove it from the Q ...👋👋👋👋👋👋');
-        delete msgQueue.messages[id];
-        console.log('after deleting the order from Msg Q ❌❌❌❌❌>>', msgQueue);
-
-    })
+    }
 
     socket.on('get_all', () => {
-        console.log('get all the orders 👁️‍🗨️👁️‍🗨️👁️‍🗨️👁️‍🗨️👁️‍🗨️');
-        Object.keys(msgQueue.messages).forEach(id => {
-            socket.emit('message', { id: id, payload: msgQueue.messages[id] })
-        })
-    })
-})
+        console.log("get all the messages 👁️‍🗨️👁️‍🗨️👁️‍🗨️👁️‍🗨️👁️‍🗨️ ")
 
-module.exports={allCaps}
+        Object.keys(msgQueue.messages).forEach(id => {
+            socket.emit('order', { id: id, payload: msgQueue.messages.id })
+        });
+    });
+
+
+    socket.on('received', msg => {
+
+        console.log("received from the store and remove it from the Q ...👋👋👋👋👋👋")
+        delete msgQueue.messages[msg.id];
+        console.log("after deleting the order from Msg Q ❌❌❌❌❌ ", msgQueue.messages)
+    })
+
+    socket.on("in-transit", inTransit);
+    function inTransit(payload) {
+        let order = {
+            event: "in-transit",
+            time: new Date(),
+            payload: payload,
+        };
+        console.log("Event", order);
+    }
+
+    socket.on("delivered", delivered);
+    function delivered(payload) {
+        let order = {
+            event: "delivered",
+            time: new Date(),
+            payload: payload,
+        };
+        console.log("Event", order);
+        caps.emit('deliveredVendor', payload)
+    }
+
+
+})
