@@ -41,7 +41,7 @@
 
 * [lab 12 pull requset](https://github.com/DimaAlabsi/CAPS-/pull/2)
 
-* [lab 13 pull requset](https://github.com/DimaAlabsi/CAPS-/pull/3)
+* [lab 13 pull requset](https://github.com/DimaAlabsi/CAPS-/pull/4)
 
 
 # dependencies 💯
@@ -55,6 +55,7 @@ jest
 supertest
 Socket.io
 Socket.io-client
+uuid
 
     
 

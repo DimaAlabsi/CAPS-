@@ -1,35 +1,34 @@
-"use strict";
-// const events=require('../events');
-// const faker= require('faker');
+'use strict';
 require('dotenv').config();
-const PORT= process.env.PORT || 8080;
-const io =require('socket.io-client');
-
-//connect
-const host=`http://localhost:${PORT}` || 'http://localhost:8080';
-const capsConnection = io.connect(`${host}/caps`)
-const faker = require('faker');
-const nameOfStore = process.env.STORE_NAME;
-
+const PORT = process.env.PORT || 8080;
+const client = require('socket.io-client');
+const host = `http://localhost:${PORT}/caps` || 'http://localhost:8080/caps';
+const capsConnection = client.connect(host);
+// // const events=require('../events');
+// const faker= require('faker');
+// const nameOfStore = process.env.STORE_NAME;
 capsConnection.emit('get_all');
-const pickup=(payload)=>{
 
-    setTimeout(()=>{
-        console.log(`DRIVER: picked up ${payload.id}`);
-        capsConnection.emit('in-transit', JSON.stringify(payload))
-    }, 1000)
+capsConnection.on('order', payload => {
+  console.log("Driver : got the order & want to recieve it 🌻 🎁 ", payload)
+  capsConnection.emit('received', payload)
 
 
 
-setTimeout(() => {
-    console.log(`DRIVER: delivered ${payload.id}`);
-    capsConnection.emit('delivered', JSON.stringify(payload));
-  }, 1500)
+  setTimeout(() => {
+    console.log("Order picked up by DREIVER 🌻  ");
+    capsConnection.emit("in-transit", payload);
+  }, 1000);
+  setTimeout(() => {
+    console.log(" Order delivered by DRIVER ✔️", payload);
+    capsConnection.emit("delivered", payload);
+  }, 2000);
 
 
-  capsConnection.emit('received');
-}
-capsConnection.on('pickup',pickup)
+})
+
+//   // module.exports={pickup}
 
 
-  // module.exports={pickup}
+
+
